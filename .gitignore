@@ -1,0 +1,20 @@
+# Local runtime, pairing credentials, desktop connection and uploaded files
+/work/
+/output/
+/docs/
+**/node_modules/
+**/.codex-chat-space/
+**/.DS_Store
+**/Thumbs.db
+*.log
+*.log.*
+*.zip
+*.test.*
+.env
+.env.*
+
+# Per-machine task bindings and old local screenshots/notes
+/outputs/ai-team/project-bindings.json
+/outputs/ai-team/*.jpg
+/outputs/ai-team/*.png
+/outputs/ai-team/*.md
