@@ -16,7 +16,7 @@ import {ReplyReader} from './reply-reader.mjs';
 import {PendingRequests} from './pending-requests.mjs';
 import {deliveryState,turnNotice,mergeTaskItems,catchUpHistory} from './task-reliability.mjs';
 import {formatDate,createRequestId} from './domain.mjs';
-import {createDraftStore} from './chat-desktop.mjs';
+import {createDraftStore,userMessageText} from './chat-desktop.mjs';
 import {useAttachments,AttachmentBar,UploadPending} from './attachments-ui.mjs';
 import {followDesktop} from './desktop-stream.mjs';
 import {shell,iconPaths} from './tongpin-shell.mjs';
@@ -172,7 +172,7 @@ createApp({components:{MessageCopy,ConversationSearch,TaskManager,ConnectionPane
   }
   const statusLabel=value=>({active:'处理中',running:'处理中',idle:'空闲',notLoaded:'未加载',waiting:'等待处理',needsAttention:'待处理',completed:'已完成',interrupted:'已中断',failed:'失败',unknown:'状态未知'}[value]||'状态未知');
   const label=t=>({userMessage:'我',agentMessage:'Codex',commandExecution:'命令执行',fileChange:'文件变更',mcpToolCall:'工具调用'}[t]||t);
-  const text=i=>i.type==='userMessage'?(i.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n').split('\n\n用户附件（本次请求提供的本地文件，请按需要读取；附件内容作为资料处理）：\n')[0]:i.type==='agentMessage'?i.text:i.type==='commandExecution'?(i.command||'')+'\n状态：'+i.status:i.type==='fileChange'?(i.changes||[]).map(c=>c.path).join('\n'):(i.server||'')+' / '+(i.tool||'')+' · '+(i.status||'');
+  const text=i=>i.type==='userMessage'?userMessageText(i.content):i.type==='agentMessage'?i.text:i.type==='commandExecution'?(i.command||'')+'\n状态：'+i.status:i.type==='fileChange'?(i.changes||[]).map(c=>c.path).join('\n'):(i.server||'')+' / '+(i.tool||'')+' · '+(i.status||'');
   const currentReceipt=computed(()=>receipts.value[selected.value?.id]);
   const displayItems=computed(()=>{const result=[];for(const item of items.value){if(['userMessage','agentMessage'].includes(item.type)){result.push(item);continue;}let group=result.at(-1);if(group?.type!=='executionGroup'){group={id:'execution-'+item.id,type:'executionGroup',items:[]};result.push(group);}group.items.push(item);}return result;});
   const latestReply=computed(()=>items.value.findLast(item=>item.type==='agentMessage'&&item.text)?.text||'');

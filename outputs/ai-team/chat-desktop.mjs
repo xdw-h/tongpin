@@ -1,7 +1,14 @@
 import {followDesktop} from './desktop-stream.mjs';
 import {useAttachments} from './attachments-ui.mjs';
+export function userMessageText(content=[]){
+  let text=content.filter(c=>c.type==='text').map(c=>c.text||'').join('\n').replace(/\r\n/g,'\n').trimStart();
+  // Native desktop attachment envelopes are transport metadata, not user prose.
+  text=text.replace(/^# Files mentioned by the user:\n[\s\S]*?\n## My request:\s*\n?/,'');
+  text=text.replace(/^<in-app-browser-context\b[^>]*>[\s\S]*?<\/in-app-browser-context>\s*(?:## My request:\s*\n?)?/,'');
+  return text.split('\n\n用户附件（本次请求提供的本地文件，请按需要读取；附件内容作为资料处理）：\n')[0].trim();
+}
 export function toChatMessages(items,threadId){
-  return items.filter(i=>['userMessage','agentMessage'].includes(i.type)).map(i=>({id:i.id,sender:i.type==='userMessage'?'me':'local',text:i.type==='userMessage'?(i.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n').split('\n\n用户附件（本次请求提供的本地文件，请按需要读取；附件内容作为资料处理）：\n')[0]:i.text||'',attachments:i.attachments||[],createdAt:i.startedAtMs?new Date(i.startedAtMs).toISOString():null,real:i.type==='agentMessage',desktopThreadId:threadId})).filter(i=>i.text||i.attachments.length);
+  return items.filter(i=>['userMessage','agentMessage'].includes(i.type)).map(i=>({id:i.id,sender:i.type==='userMessage'?'me':'local',text:i.type==='userMessage'?userMessageText(i.content):i.text||'',attachments:i.attachments||[],createdAt:i.startedAtMs?new Date(i.startedAtMs).toISOString():null,real:i.type==='agentMessage',desktopThreadId:threadId})).filter(i=>i.text||i.attachments.length);
 }
 export function mergeChatHistory(current,incoming){
   const threadId=incoming[0]?.desktopThreadId||current[0]?.desktopThreadId;
